@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Калькулятор напитков — ВинЛаб</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Nunito+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* ── Brand palette from guideline ── */
+    --purple-dark: #522953;
+    --purple: #8531a5;
+    --purple-light: #a855c7;
+    --green-dark: #076b3b;
+    --green: #6cc351;
+    --green-light: #7ed661;
+    --orange: #ef7d00;
+    --orange-light: #f5a03c;
+    --dark: #24272c;
+    --grey-dark: #555960;
+    --grey: #8a8d94;
+    --grey-light: #c7c9d4;
+    --grey-bg: #f0f0f4;
+    --white: #ffffff;
+
+    /* ── Semantic ── */
+    --accent: var(--purple);
+    --accent-dark: var(--purple-dark);
+    --accent2: var(--green-dark);
+    --accent2-light: var(--green);
+    --cta: var(--orange);
+    --cta-hover: var(--orange-light);
+    --bg: #f7f6fa;
+    --card: var(--white);
+    --text: var(--dark);
+    --text-muted: var(--grey-dark);
+    --border: var(--grey-light);
+    --radius: 14px;
+    --shadow: 0 2px 16px rgba(82, 41, 83, 0.06);
+    --shadow-lg: 0 8px 40px rgba(82, 41, 83, 0.10);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito Sans', 'Myriad Pro', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══════════════════════════════════════
+     HEADER with brand pattern
+     ═══════════════════════════════════════ */
+  .calc-header {
+    background: var(--purple-dark);
+    padding: 52px 24px 56px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Geometric pattern overlay (circles/semicircles from brand) */
+  .calc-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle 120px at 10% 80%, var(--purple) 0%, transparent 70%),
+      radial-gradient(circle 80px at 25% 20%, rgba(108, 195, 81, 0.15) 0%, transparent 60%),
+      radial-gradient(circle 160px at 85% 70%, rgba(108, 195, 81, 0.1) 0%, transparent 70%),
+      radial-gradient(circle 60px at 70% 15%, var(--purple) 0%, transparent 60%),
+      radial-gradient(circle 100px at 50% 110%, rgba(108, 195, 81, 0.12) 0%, transparent 60%);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  /* Decorative circles (brand pattern) */
+  .calc-header::after {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 3px solid rgba(108, 195, 81, 0.2);
+    pointer-events: none;
+  }
+
+  .header-content {
+    position: relative;
+    z-index: 1;
+  }
+  .brand-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .brand-line .logo-text {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--white);
+    letter-spacing: -0.3px;
+  }
+  .brand-line .badge {
+    background: var(--green-dark);
+    color: var(--white);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .calc-header h1 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: clamp(26px, 5vw, 40px);
+    color: var(--white);
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+  .calc-header p {
+    font-size: 15px;
+    color: rgba(255,255,255,0.65);
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* ═══════════════════════════════════════
+     MAIN CONTAINER
+     ═══════════════════════════════════════ */
+  .calc-container {
+    max-width: 780px;
+    margin: -24px auto 60px;
+    padding: 0 16px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ═══════════════════════════════════════
+     FORM CARDS
+     ═══════════════════════════════════════ */
+  .form-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 32px 28px;
+    margin-bottom: 16px;
+  }
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .step-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px; height: 30px;
+    background: var(--purple-dark);
+    color: var(--white);
+    border-radius: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .step-title {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 19px;
+    color: var(--purple-dark);
+  }
+
+  /* ── Field Label ── */
+  .field-group {
+    margin-bottom: 22px;
+  }
+  .field-group:last-child { margin-bottom: 0; }
+  .field-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--grey-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+  }
+
+  /* ── Pill selectors ── */
+  .pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pill {
+    padding: 10px 18px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--white);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+  .pill:hover {
+    border-color: var(--purple);
+    color: var(--purple);
+  }
+  .pill.active {
+    background: var(--purple-dark);
+    border-color: var(--purple-dark);
+    color: var(--white);
+  }
+
+  /* ── Input row ── */
+  .input-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+  }
+  .input-box label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--grey-dark);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .input-box input,
+  .input-box select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--white);
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .input-box input:focus,
+  .input-box select:focus {
+    outline: none;
+    border-color: var(--purple);
+    box-shadow: 0 0 0 3px rgba(133, 49, 165, 0.1);
+  }
+  .input-box select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1.5l5 5 5-5' stroke='%23555960' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+
+  /* ── Range slider ── */
+  .slider-wrap { padding: 4px 0; }
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--grey);
+    margin-bottom: 10px;
+  }
+  .slider-labels span.active-label {
+    color: var(--purple-dark);
+    font-weight: 800;
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--purple-dark) 0%, var(--purple-dark) var(--val, 50%), var(--grey-light) var(--val, 50%), var(--grey-light) 100%);
+    outline: none;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--purple-dark);
+    border: 3px solid var(--white);
+    box-shadow: 0 2px 8px rgba(82, 41, 83, 0.35);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--purple-dark);
+    border: 3px solid var(--white);
+    box-shadow: 0 2px 8px rgba(82, 41, 83, 0.35);
+  }
+
+  /* ═══════════════════════════════════════
+     CALCULATE BUTTON
+     ═══════════════════════════════════════ */
+  .calc-btn {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    background: var(--green-dark);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Outfit', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 20px rgba(7, 107, 59, 0.25);
+    margin-bottom: 24px;
+  }
+  .calc-btn:hover {
+    background: #05853e;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(7, 107, 59, 0.3);
+  }
+  .calc-btn:active { transform: translateY(0); }
+
+  /* ═══════════════════════════════════════
+     RESULTS
+     ═══════════════════════════════════════ */
+  .results-section {
+    display: none;
+    animation: fadeUp 0.45s ease;
+  }
+  .results-section.visible { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .results-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .results-header h2 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 24px;
+    color: var(--purple-dark);
+    margin-bottom: 4px;
+  }
+  .results-header p {
+    font-size: 14px;
+    color: var(--grey-dark);
+  }
+
+  /* ── Total summary ── */
+  .total-summary {
+    background: var(--purple-dark);
+    border-radius: var(--radius);
+    padding: 28px;
+    color: var(--white);
+    text-align: center;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .total-summary::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(108, 195, 81, 0.12);
+    pointer-events: none;
+  }
+  .total-summary::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; left: 20px;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: rgba(133, 49, 165, 0.2);
+    pointer-events: none;
+  }
+  .total-summary h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 18px;
+    color: var(--green);
+    position: relative;
+  }
+  .total-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 32px;
+    position: relative;
+  }
+  .total-item { text-align: center; }
+  .total-item .total-qty {
+    font-family: 'Outfit', sans-serif;
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .total-item .total-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.65;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+
+  /* ── Category cards ── */
+  .result-category {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px 24px;
+    margin-bottom: 12px;
+  }
+  .cat-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1.5px solid var(--grey-bg);
+  }
+  .cat-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .cat-icon.champagne  { background: #fef7e6; }
+  .cat-icon.wine-red   { background: #f8e6f0; }
+  .cat-icon.wine-white { background: #f4f1e4; }
+  .cat-icon.strong     { background: #ece6f3; }
+  .cat-icon.beer       { background: #fff4e0; }
+  .cat-icon.soft       { background: #e6f5ec; }
+
+  .cat-title {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+  }
+  .cat-subtitle {
+    font-size: 12px;
+    color: var(--grey);
+  }
+
+  .result-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+  }
+  .result-item {
+    background: var(--grey-bg);
+    border-radius: 10px;
+    padding: 16px 12px;
+    text-align: center;
+  }
+  .result-item .qty {
+    font-family: 'Outfit', sans-serif;
+    font-size: 34px;
+    font-weight: 800;
+    color: var(--purple-dark);
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+  .result-item .unit {
+    font-size: 10px;
+    color: var(--grey);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 700;
+  }
+  .result-item .name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-top: 6px;
+  }
+
+  /* ═══════════════════════════════════════
+     CTA BLOCK
+     ═══════════════════════════════════════ */
+  .cta-block {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 32px 28px;
+    text-align: center;
+    border: 2px solid var(--green);
+    margin-top: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--green-dark), var(--green), var(--green-dark));
+  }
+  .cta-badge {
+    display: inline-block;
+    background: var(--green-dark);
+    color: var(--white);
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 5px 14px;
+    border-radius: 6px;
+    margin-bottom: 14px;
+  }
+  .cta-block h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--purple-dark);
+    margin-bottom: 8px;
+  }
+  .cta-block p {
+    font-size: 14px;
+    color: var(--grey-dark);
+    max-width: 420px;
+    margin: 0 auto 20px;
+    line-height: 1.5;
+  }
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 32px;
+    background: var(--orange);
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-decoration: none;
+    box-shadow: 0 4px 16px rgba(239, 125, 0, 0.25);
+  }
+  .cta-btn:hover {
+    background: #d97000;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(239, 125, 0, 0.3);
+  }
+  .cta-btn svg {
+    width: 16px; height: 16px;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    fill: none;
+  }
+  .cta-phone {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--grey-dark);
+  }
+  .cta-phone a {
+    color: var(--purple-dark);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  /* ═══════════════════════════════════════
+     DISCLAIMER
+     ═══════════════════════════════════════ */
+  .disclaimer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--grey);
+    margin-top: 28px;
+    padding: 0 16px;
+    line-height: 1.6;
+  }
+
+  /* ═══════════════════════════════════════
+     RESPONSIVE
+     ═══════════════════════════════════════ */
+  @media (max-width: 600px) {
+    .calc-header { padding: 40px 20px 48px; }
+    .form-card { padding: 24px 20px; }
+    .input-row { grid-template-columns: 1fr 1fr; }
+    .total-row { gap: 20px; }
+    .total-item .total-qty { font-size: 32px; }
+    .result-items { grid-template-columns: 1fr 1fr; }
+    .pill { padding: 8px 14px; font-size: 13px; }
+    .cta-block { padding: 24px 20px; }
+    .product-card { width: 150px; }
+  }
+
+  /* ═══ FEED INTEGRATION ═══ */
+  .feed-bar {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .feed-bar label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    white-space: nowrap;
+  }
+  .feed-bar input[type=text] {
+    flex: 1;
+    min-width: 180px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+    outline: none;
+    transition: border-color .2s;
+  }
+  .feed-bar input[type=text]:focus { border-color: var(--accent); }
+  .feed-load-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .2s;
+  }
+  .feed-load-btn:hover { background: var(--accent-dark); }
+  .feed-load-btn:disabled { background: var(--grey-light); cursor: default; }
+  .feed-status {
+    width: 100%;
+    font-size: 13px;
+    color: var(--text-muted);
+    min-height: 18px;
+  }
+  .feed-status.ok  { color: var(--green-dark); }
+  .feed-status.err { color: #c0392b; }
+  .product-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--grey-bg);
+  }
+  .product-card {
+    background: var(--grey-bg);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 175px;
+    flex-shrink: 0;
+    transition: box-shadow .2s;
+  }
+  .product-card:hover { box-shadow: var(--shadow); }
+  .product-card img {
+    width: 56px;
+    height: 76px;
+    object-fit: contain;
+    align-self: center;
+    border-radius: 4px;
+  }
+  .product-card .pc-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .product-card .pc-price {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--accent);
+    margin-top: 2px;
+  }
+  .product-card .pc-vol {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .product-card a.pc-link {
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    margin-top: auto;
+  }
+  .product-card a.pc-link:hover { text-decoration: underline; }
+  .products-empty {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 10px 0 2px;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div class="calc-header">
+  <div class="header-content">
+    <h1>Калькулятор напитков<br>на мероприятие</h1>
+    <p>Рассчитайте оптимальное количество алкоголя и безалкогольных напитков для вашего события</p>
+  </div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="calc-container">
+
+  <!-- STEP 1 -->
+  <div class="form-card">
+    <div class="step-header">
+      <span class="step-num">1</span>
+      <span class="step-title">Тип мероприятия</span>
+    </div>
+    <div class="pill-group" id="eventType">
+      <div class="pill active" data-value="wedding">Свадьба</div>
+      <div class="pill" data-value="corporate">Корпоратив</div>
+      <div class="pill" data-value="birthday">День рождения</div>
+      <div class="pill" data-value="jubilee">Юбилей</div>
+      <div class="pill" data-value="newyear">Новый год</div>
+      <div class="pill" data-value="furshet">Фуршет</div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="form-card">
+    <div class="step-header">
+      <span class="step-num">2</span>
+      <span class="step-title">Гости и формат</span>
+    </div>
+    <div class="input-row">
+      <div class="input-box">
+        <label>Мужчины</label>
+        <input type="number" id="men" value="15" min="0" max="500">
+      </div>
+      <div class="input-box">
+        <label>Женщины</label>
+        <input type="number" id="women" value="15" min="0" max="500">
+      </div>
+      <div class="input-box">
+        <label>Непьющие</label>
+        <input type="number" id="nondrinkers" value="3" min="0" max="500">
+      </div>
+      <div class="input-box">
+        <label>Длительность</label>
+        <select id="duration">
+          <option value="3">3 часа</option>
+          <option value="4">4 часа</option>
+          <option value="5" selected>5 часов</option>
+          <option value="6">6 часов</option>
+          <option value="7">7 часов</option>
+          <option value="8">8+ часов</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="form-card">
+    <div class="step-header">
+      <span class="step-num">3</span>
+      <span class="step-title">Сезон и предпочтения</span>
+    </div>
+    <div class="field-group">
+      <span class="field-label">Сезон проведения</span>
+      <div class="pill-group" id="season">
+        <div class="pill" data-value="winter">❄️ Зима</div>
+        <div class="pill" data-value="spring">🌿 Весна</div>
+        <div class="pill active" data-value="summer">☀️ Лето</div>
+        <div class="pill" data-value="autumn">🍂 Осень</div>
+      </div>
+    </div>
+    <div class="field-group">
+      <span class="field-label">Уровень потребления</span>
+      <div class="slider-wrap">
+        <div class="slider-labels">
+          <span id="lbl-low">Умеренно</span>
+          <span id="lbl-mid">Средне</span>
+          <span id="lbl-high">Много пьют</span>
+        </div>
+        <input type="range" id="drinkLevel" min="1" max="3" value="2" step="1">
+      </div>
+    </div>
+  </div>
+
+  <!-- BUTTON -->
+  <button class="calc-btn" onclick="calculate()">Рассчитать напитки →</button>
+
+  <!-- ═══ RESULTS ═══ -->
+  <div class="results-section" id="results">
+    <!-- Feed loader -->
+    <div class="feed-bar">
+      <label>Товарный фид YML</label>
+      <input type="text" id="feedUrl" placeholder="https://www.winelab.ru/retailmedia/products-global.yml" value="https://www.winelab.ru/retailmedia/products-global.yml">
+      <button class="feed-load-btn" id="feedBtn" onclick="loadFeed()">Загрузить по URL</button>
+      <label class="feed-load-btn" style="cursor:pointer;background:var(--green-dark)">
+        Загрузить файл
+        <input type="file" accept=".yml,.xml" style="display:none" onchange="loadFeedFile(this)">
+      </label>
+      <div class="feed-status" id="feedStatus"></div>
+    </div>
+
+    <div class="results-header">
+      <h2>Результат расчёта</h2>
+      <p id="resultsSummary"></p>
+    </div>
+
+    <div class="total-summary">
+      <h3>Всего потребуется</h3>
+      <div class="total-row">
+        <div class="total-item">
+          <div class="total-qty" id="totalAlco">0</div>
+          <div class="total-label">бутылок алкоголя</div>
+        </div>
+        <div class="total-item">
+          <div class="total-qty" id="totalSoft">0</div>
+          <div class="total-label">литров безалк.</div>
+        </div>
+        <div class="total-item">
+          <div class="total-qty" id="totalGuests">0</div>
+          <div class="total-label">гостей</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Champagne -->
+    <div class="result-category">
+      <div class="cat-header">
+        <div class="cat-icon champagne">🥂</div>
+        <div>
+          <div class="cat-title">Шампанское и игристое</div>
+          <div class="cat-subtitle">0,75 л · Для тостов и аперитива</div>
+        </div>
+      </div>
+      <div class="result-items" id="res-champagne"></div>
+      <div class="product-row" id="prod-champagne"></div>
+    </div>
+
+    <!-- Red Wine -->
+    <div class="result-category">
+      <div class="cat-header">
+        <div class="cat-icon wine-red">🍷</div>
+        <div>
+          <div class="cat-title">Вино красное</div>
+          <div class="cat-subtitle">0,75 л · Сухое и полусладкое</div>
+        </div>
+      </div>
+      <div class="result-items" id="res-wine-red"></div>
+      <div class="product-row" id="prod-wine-red"></div>
+    </div>
+
+    <!-- White Wine -->
+    <div class="result-category">
+      <div class="cat-header">
+        <div class="cat-icon wine-white">🍾</div>
+        <div>
+          <div class="cat-title">Вино белое</div>
+          <div class="cat-subtitle">0,75 л · Лёгкое сопровождение</div>
+        </div>
+      </div>
+      <div class="result-items" id="res-wine-white"></div>
+      <div class="product-row" id="prod-wine-white"></div>
+    </div>
+
+    <!-- Strong -->
+    <div class="result-category">
+      <div class="cat-header">
+        <div class="cat-icon strong">🥃</div>
+        <div>
+          <div class="cat-title">Крепкий алкоголь</div>
+          <div class="cat-subtitle">Водка 0,5 л · Коньяк 0,5 л · Виски 0,7 л</div>
+        </div>
+      </div>
+      <div class="result-items" id="res-strong"></div>
+      <div class="product-row" id="prod-strong"></div>
+    </div>
+
+    <!-- Beer -->
+    <div class="result-category">
+      <div class="cat-header">
+        <div class="cat-icon beer">🍺</div>
+        <div>
+          <div class="cat-title">Пиво</div>
+          <div class="cat-subtitle">0,5 л · Светлое и тёмное</div>
+        </div>
+      </div>
+      <div class="result-items" id="res-beer"></div>
+      <div class="product-row" id="prod-beer"></div>
+    </div>
+
+    <!-- Soft -->
+    <div class="result-category">
+      <div class="cat-header">
+        <div class="cat-icon soft">🧃</div>
+        <div>
+          <div class="cat-title">Безалкогольные напитки</div>
+          <div class="cat-subtitle">Вода, соки, лимонады, тоники</div>
+        </div>
+      </div>
+      <div class="result-items" id="res-soft"></div>
+      <div class="product-row" id="prod-soft"></div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-block">
+      <div class="cta-badge">Для бизнеса</div>
+      <h3>Подобрать напитки из каталога ВинЛаб</h3>
+      <p>Персональный менеджер сформирует заказ по вашему расчёту с корпоративной скидкой. Выставление счёта за 10 минут.</p>
+      <a href="https://www.winelab.ru/b2b" target="_blank" class="cta-btn">
+        Оставить заявку
+        <svg viewBox="0 0 16 16"><polyline points="3,8 13,8"/><polyline points="9,4 13,8 9,12"/></svg>
+      </a>
+      <div class="cta-phone">или позвоните: <a href="tel:88003017755">8 800 301-77-55</a></div>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    Расчёт носит рекомендательный характер и не учитывает индивидуальных предпочтений гостей.<br>
+    Чрезмерное употребление алкоголя вредит вашему здоровью. Продажа лицам до 18 лет запрещена.
+  </div>
+</div>
+
+<script>
+// ── Pill selectors ──
+document.querySelectorAll('.pill-group').forEach(group => {
+  group.querySelectorAll('.pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      group.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+    });
+  });
+});
+
+// ── Range slider ──
+const rangeInput = document.getElementById('drinkLevel');
+function updateRange() {
+  const val = (rangeInput.value - rangeInput.min) / (rangeInput.max - rangeInput.min) * 100;
+  rangeInput.style.setProperty('--val', val + '%');
+  document.getElementById('lbl-low').classList.toggle('active-label', rangeInput.value == 1);
+  document.getElementById('lbl-mid').classList.toggle('active-label', rangeInput.value == 2);
+  document.getElementById('lbl-high').classList.toggle('active-label', rangeInput.value == 3);
+}
+rangeInput.addEventListener('input', updateRange);
+updateRange();
+
+// ── Helpers ──
+function getVal(id) { return parseInt(document.getElementById(id).value) || 0; }
+function getActive(groupId) {
+  const el = document.querySelector('#' + groupId + ' .pill.active');
+  return el ? el.dataset.value : '';
+}
+function renderItems(containerId, items) {
+  document.getElementById(containerId).innerHTML = items.map(i =>
+    '<div class="result-item">' +
+      '<div class="qty">' + i.qty + '</div>' +
+      '<div class="unit">' + i.unit + '</div>' +
+      '<div class="name">' + i.name + '</div>' +
+    '</div>'
+  ).join('');
+}
+
+// ═══════════════════════════════════════
+// CALCULATION ENGINE
+// ═══════════════════════════════════════
+function calculate() {
+  var men = getVal('men');
+  var women = getVal('women');
+  var nondrinkers = getVal('nondrinkers');
+  var duration = getVal('duration');
+  var eventType = getActive('eventType');
+  var season = getActive('season');
+  var level = parseInt(rangeInput.value);
+
+  var totalGuests = men + women + nondrinkers;
+  var drinkers = Math.max(men + women - nondrinkers, 0);
+  var drinkingMen = Math.max(men - Math.round(nondrinkers * men / (men + women || 1)), 0);
+  var drinkingWomen = drinkers - drinkingMen;
+
+  if (totalGuests < 1) {
+    alert('Укажите хотя бы одного гостя');
+    return;
+  }
+
+  // Duration coeff (base = 5h)
+  var durCoeff = duration <= 3 ? 0.7 : duration <= 4 ? 0.85 : duration <= 5 ? 1.0 : duration <= 6 ? 1.15 : duration <= 7 ? 1.25 : 1.35;
+
+  // Level coeff
+  var lvlCoeff = level === 1 ? 0.7 : level === 2 ? 1.0 : 1.35;
+
+  // Season adjustments
+  var seasonStrong = (season === 'winter' || season === 'autumn') ? 1.2 : 0.9;
+  var seasonWine   = (season === 'summer' || season === 'spring') ? 1.15 : 0.95;
+  var seasonBeer   = (season === 'summer') ? 1.4 : 0.8;
+  var seasonSoft   = (season === 'summer') ? 1.4 : 1.0;
+
+  // Event type adjustments
+  var champCoeff = 1, wineCoeff = 1, strongCoeff = 1, beerCoeff = 1;
+  switch(eventType) {
+    case 'wedding':   champCoeff = 1.5; wineCoeff = 1.2; break;
+    case 'corporate': beerCoeff = 1.3; champCoeff = 0.5; strongCoeff = 1.1; break;
+    case 'birthday':  wineCoeff = 1.1; break;
+    case 'jubilee':   strongCoeff = 1.2; champCoeff = 1.2; break;
+    case 'newyear':   champCoeff = 2.0; wineCoeff = 1.1; break;
+    case 'furshet':   wineCoeff = 1.4; champCoeff = 1.3; strongCoeff = 0.5; beerCoeff = 0.3; break;
+  }
+
+  // Per-person norms (liters, "medium" level, 5h)
+  // Champagne ~0.15 L/person, Wine ~0.35 L/person (red 60%, white 40%)
+  // Strong: men ~0.25 L, women ~0.1 L; Beer: men ~0.5 L, women ~0.15 L
+
+  var champL = drinkers * 0.15 * durCoeff * lvlCoeff * champCoeff;
+  var champBottles = Math.ceil(champL / 0.75);
+
+  var wineTotalL = drinkers * 0.35 * durCoeff * lvlCoeff * wineCoeff * seasonWine;
+  var wineRedL   = wineTotalL * 0.6;
+  var wineWhiteL = wineTotalL * 0.4;
+  var wineRedB   = Math.ceil(wineRedL / 0.75);
+  var wineWhiteB = Math.ceil(wineWhiteL / 0.75);
+
+  var strongL   = (drinkingMen * 0.25 + drinkingWomen * 0.1) * durCoeff * lvlCoeff * strongCoeff * seasonStrong;
+  var vodkaB    = Math.ceil(strongL * 0.6 / 0.5);
+  var cognacB   = Math.ceil(strongL * 0.25 / 0.5);
+  var whiskyB   = Math.ceil(strongL * 0.15 / 0.7);
+
+  var beerL  = (drinkingMen * 0.5 + drinkingWomen * 0.15) * durCoeff * lvlCoeff * beerCoeff * seasonBeer;
+  var beerB  = Math.ceil(beerL / 0.5);
+
+  var softBase  = totalGuests * 1.5 * seasonSoft;
+  var waterL    = Math.ceil(softBase * 0.4);
+  var juiceL    = Math.ceil(softBase * 0.25);
+  var lemonadeL = Math.ceil(softBase * 0.2);
+  var tonicL    = Math.ceil(softBase * 0.15);
+  var totalSoftL = waterL + juiceL + lemonadeL + tonicL;
+
+  var totalAlco = champBottles + wineRedB + wineWhiteB + vodkaB + cognacB + whiskyB + beerB;
+
+  // Render
+  var names = {
+    wedding: 'свадьбу', corporate: 'корпоратив', birthday: 'день рождения',
+    jubilee: 'юбилей', newyear: 'Новый год', furshet: 'фуршет'
+  };
+  document.getElementById('resultsSummary').textContent =
+    'Расчёт на ' + names[eventType] + ' для ' + totalGuests + ' гостей, ' + duration + ' ч';
+
+  document.getElementById('totalAlco').textContent = totalAlco;
+  document.getElementById('totalSoft').textContent = totalSoftL;
+  document.getElementById('totalGuests').textContent = totalGuests;
+
+  renderItems('res-champagne', [
+    { qty: champBottles, unit: 'бутылок', name: 'Игристое 0,75 л' }
+  ]);
+  renderItems('res-wine-red', [
+    { qty: wineRedB, unit: 'бутылок', name: 'Красное 0,75 л' }
+  ]);
+  renderItems('res-wine-white', [
+    { qty: wineWhiteB, unit: 'бутылок', name: 'Белое 0,75 л' }
+  ]);
+  renderItems('res-strong', [
+    { qty: vodkaB, unit: 'бут.', name: 'Водка 0,5 л' },
+    { qty: cognacB, unit: 'бут.', name: 'Коньяк 0,5 л' },
+    { qty: whiskyB, unit: 'бут.', name: 'Виски 0,7 л' }
+  ]);
+  renderItems('res-beer', [
+    { qty: beerB, unit: 'бутылок', name: 'Пиво 0,5 л' }
+  ]);
+  renderItems('res-soft', [
+    { qty: waterL, unit: 'литров', name: 'Вода' },
+    { qty: juiceL, unit: 'литров', name: 'Соки' },
+    { qty: lemonadeL, unit: 'литров', name: 'Лимонады' },
+    { qty: tonicL, unit: 'литров', name: 'Тоники' }
+  ]);
+
+  var r = document.getElementById('results');
+  r.classList.add('visible');
+  r.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // If feed already loaded — render products immediately
+  if (window._feedOffers) renderAllProducts();
+}
+
+// ═══════════════════════════════════════
+// FEED LOADER
+// ═══════════════════════════════════════
+
+// Category mapping: result container id → keywords to match in YML category name
+var FEED_MAP = {
+  'champagne':  ['игристое', 'шампанское', 'cava', 'просекко', 'prosecco', 'sparkling'],
+  'wine-red':   ['вино красное', 'красное вино', 'вин крас'],
+  'wine-white': ['вино белое', 'белое вино', 'вин бел', 'розовое', 'вино роз'],
+  'strong':     ['водка', 'коньяк', 'виски', 'whisky', 'whiskey', 'brandy', 'ром', 'текила', 'джин', 'ликёр', 'ликер', 'крепкие'],
+  'beer':       ['пиво', 'beer', 'пивные', 'сидр'],
+  'soft':       ['вода', 'сок', 'лимонад', 'тоник', 'безалкогол', 'напиток', 'морс']
+};
+
+window._feedOffers = null;   // parsed offers by category id
+window._feedCatMap = null;   // categoryId → normalized names
+
+async function loadFeed() {
+  var url = document.getElementById('feedUrl').value.trim();
+  if (!url) return;
+  var btn = document.getElementById('feedBtn');
+  var status = document.getElementById('feedStatus');
+  btn.disabled = true;
+  setStatus('', 'Загружаем фид…');
+
+  var xmlText = null;
+
+  // 1. Try direct fetch
+  try {
+    var resp = await fetch(url, { mode: 'cors', cache: 'no-cache' });
+    if (resp.ok) {
+      xmlText = await resp.text();
+      setStatus('ok', '✓ Фид загружен напрямую');
+    }
+  } catch(e) { /* CORS blocked — fall through to proxy */ }
+
+  // 2. Fallback: try multiple proxies
+  var proxies = [
+    { name: 'corsproxy.io',  wrap: function(u){ return 'https://corsproxy.io/?' + encodeURIComponent(u); },                          parse: function(r){ return r.text(); } },
+    { name: 'allorigins',    wrap: function(u){ return 'https://api.allorigins.win/get?url=' + encodeURIComponent(u); },              parse: function(r){ return r.json().then(function(j){ return (j && j.contents) ? j.contents : Promise.reject('empty'); }); } },
+    { name: 'htmldriven',    wrap: function(u){ return 'https://cors-anywhere.herokuapp.com/' + u; },                                  parse: function(r){ return r.text(); } }
+  ];
+
+  for (var _i = 0; _i < proxies.length && !xmlText; _i++) {
+    var px = proxies[_i];
+    try {
+      setStatus('', 'Пробуем прокси ' + px.name + '…');
+      var resp2 = await fetch(px.wrap(url), { cache: 'no-cache' });
+      if (resp2.ok) {
+        var result = await px.parse(resp2);
+        if (result && typeof result === 'string' && result.length > 100) {
+          xmlText = result;
+          setStatus('ok', '✓ Фид загружен через ' + px.name);
+        }
+      }
+    } catch(e2) { /* try next proxy */ }
+  }
+
+  if (!xmlText) {
+    setStatus('err', '✗ Все прокси недоступны. Попробуй загрузить YML-файл вручную (кнопка ниже).');
+    btn.disabled = false;
+    return;
+  }
+
+  parseFeed(xmlText);
+  btn.disabled = false;
+}
+
+function loadFeedFile(input) {
+  var file = input.files && input.files[0];
+  if (!file) return;
+  setStatus('', 'Читаем файл…');
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    parseFeed(e.target.result);
+  };
+  reader.onerror = function() {
+    setStatus('err', '✗ Ошибка чтения файла');
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+function setStatus(cls, msg) {
+  var el = document.getElementById('feedStatus');
+  el.className = 'feed-status' + (cls ? ' ' + cls : '');
+  el.textContent = msg;
+}
+
+function parseFeed(xmlText) {
+  var parser = new DOMParser();
+  var doc = parser.parseFromString(xmlText, 'text/xml');
+  var parseErr = doc.querySelector('parsererror');
+  if (parseErr) { setStatus('err', '✗ Ошибка разбора XML'); return; }
+
+  // Build categoryId → name map
+  var catMap = {};
+  doc.querySelectorAll('category').forEach(function(c) {
+    catMap[c.getAttribute('id')] = c.textContent.toLowerCase().trim();
+  });
+  window._feedCatMap = catMap;
+
+  // For each FEED_MAP group, collect matching categoryIds
+  var groupCatIds = {};
+  Object.keys(FEED_MAP).forEach(function(group) {
+    var keywords = FEED_MAP[group];
+    groupCatIds[group] = Object.keys(catMap).filter(function(cid) {
+      var name = catMap[cid];
+      return keywords.some(function(kw) { return name.indexOf(kw) !== -1; });
+    });
+  });
+
+  // Parse offers
+  var offers = doc.querySelectorAll('offer');
+  var grouped = {};
+  Object.keys(FEED_MAP).forEach(function(g) { grouped[g] = []; });
+
+  offers.forEach(function(o) {
+    var cid = o.getAttribute('categoryId') || (o.querySelector('categoryId') ? o.querySelector('categoryId').textContent : '');
+    var group = null;
+    Object.keys(groupCatIds).forEach(function(g) {
+      if (groupCatIds[g].indexOf(cid) !== -1) group = g;
+    });
+    if (!group) return;
+
+    var name = getText(o, 'name') || getText(o, 'model') || '';
+    var price = getText(o, 'price') || '';
+    var pic = getText(o, 'picture') || '';
+    var url = o.getAttribute('url') || getText(o, 'url') || '';
+    var params = {};
+    o.querySelectorAll('param').forEach(function(p) {
+      params[(p.getAttribute('name') || '').toLowerCase()] = p.textContent.trim();
+    });
+    var vol = params['объём'] || params['объем'] || params['volume'] || params['ёмкость'] || params['емкость'] || '';
+
+    grouped[group].push({ name: name, price: price, pic: pic, url: url, vol: vol });
+  });
+
+  window._feedOffers = grouped;
+
+  var total = Object.values(grouped).reduce(function(s, arr) { return s + arr.length; }, 0);
+  setStatus('ok', '✓ Загружено ' + total + ' товаров по ' + Object.keys(groupCatIds).filter(function(g){ return groupCatIds[g].length; }).length + ' категориям');
+
+  renderAllProducts();
+}
+
+function getText(node, tag) {
+  var el = node.querySelector(tag);
+  return el ? el.textContent.trim() : '';
+}
+
+function renderAllProducts() {
+  if (!window._feedOffers) return;
+  Object.keys(FEED_MAP).forEach(function(group) {
+    var container = document.getElementById('prod-' + group);
+    if (!container) return;
+    var items = window._feedOffers[group] || [];
+    if (!items.length) {
+      container.innerHTML = '';
+      return;
+    }
+    // Show up to 6 cards
+    var show = items.slice(0, 6);
+    container.innerHTML = show.map(function(item) {
+      var imgHtml = item.pic
+        ? '<img src="' + escHtml(item.pic) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+        : '';
+      var volHtml = item.vol ? '<div class="pc-vol">' + escHtml(item.vol) + '</div>' : '';
+      var priceHtml = item.price ? '<div class="pc-price">' + formatPrice(item.price) + ' ₽</div>' : '';
+      var linkHtml = item.url
+        ? '<a class="pc-link" href="' + escHtml(item.url) + '" target="_blank" rel="noopener">Перейти →</a>'
+        : '';
+      return '<div class="product-card">' +
+        imgHtml +
+        '<div class="pc-name">' + escHtml(item.name) + '</div>' +
+        volHtml + priceHtml + linkHtml +
+        '</div>';
+    }).join('') + (items.length > 6 ? '<div class="products-empty">+ ещё ' + (items.length - 6) + ' товаров в категории</div>' : '');
+  });
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function formatPrice(p) {
+  return String(Math.round(Number(p))).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
+}
+</script>
+</body>
+</html>
