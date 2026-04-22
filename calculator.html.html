@@ -826,17 +826,7 @@
 
   <!-- ═══ RESULTS ═══ -->
   <div class="results-section" id="results">
-    <!-- Feed loader -->
-    <div class="feed-bar">
-      <label>Товарный фид YML</label>
-      <input type="text" id="feedUrl" placeholder="https://www.winelab.ru/retailmedia/products-global.yml" value="https://www.winelab.ru/retailmedia/products-global.yml">
-      <button class="feed-load-btn" id="feedBtn" onclick="loadFeed()">Загрузить по URL</button>
-      <label class="feed-load-btn" style="cursor:pointer;background:var(--green-dark)">
-        Загрузить файл
-        <input type="file" accept=".yml,.xml" style="display:none" onchange="loadFeedFile(this)">
-      </label>
-      <div class="feed-status" id="feedStatus"></div>
-    </div>
+    <!-- Feed loader removed -->
 
     <div class="results-header">
       <h2>Результат расчёта</h2>
@@ -871,7 +861,7 @@
         </div>
       </div>
       <div class="result-items" id="res-champagne"></div>
-      <div class="product-row" id="prod-champagne"></div>
+
     </div>
 
     <!-- Red Wine -->
@@ -884,7 +874,7 @@
         </div>
       </div>
       <div class="result-items" id="res-wine-red"></div>
-      <div class="product-row" id="prod-wine-red"></div>
+
     </div>
 
     <!-- White Wine -->
@@ -897,7 +887,7 @@
         </div>
       </div>
       <div class="result-items" id="res-wine-white"></div>
-      <div class="product-row" id="prod-wine-white"></div>
+
     </div>
 
     <!-- Strong -->
@@ -910,7 +900,7 @@
         </div>
       </div>
       <div class="result-items" id="res-strong"></div>
-      <div class="product-row" id="prod-strong"></div>
+
     </div>
 
     <!-- Beer -->
@@ -923,7 +913,7 @@
         </div>
       </div>
       <div class="result-items" id="res-beer"></div>
-      <div class="product-row" id="prod-beer"></div>
+
     </div>
 
     <!-- Soft -->
@@ -936,16 +926,15 @@
         </div>
       </div>
       <div class="result-items" id="res-soft"></div>
-      <div class="product-row" id="prod-soft"></div>
+
     </div>
 
     <!-- CTA -->
     <div class="cta-block">
       <div class="cta-badge">Для бизнеса</div>
       <h3>Подобрать напитки из каталога ВинЛаб</h3>
-      <p>Персональный менеджер сформирует заказ по вашему расчёту с корпоративной скидкой. Выставление счёта за 10 минут.</p>
       <a href="https://www.winelab.ru/b2b" target="_blank" class="cta-btn">
-        Оставить заявку
+        На сайт
         <svg viewBox="0 0 16 16"><polyline points="3,8 13,8"/><polyline points="9,4 13,8 9,12"/></svg>
       </a>
       <div class="cta-phone">или позвоните: <a href="tel:88003017755">8 800 301-77-55</a></div>
@@ -1111,197 +1100,9 @@ function calculate() {
   var r = document.getElementById('results');
   r.classList.add('visible');
   r.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-  // If feed already loaded — render products immediately
-  if (window._feedOffers) renderAllProducts();
 }
 
-// ═══════════════════════════════════════
-// FEED LOADER
-// ═══════════════════════════════════════
 
-// Category mapping: result container id → keywords to match in YML category name
-var FEED_MAP = {
-  'champagne':  ['игристое', 'шампанское', 'cava', 'просекко', 'prosecco', 'sparkling'],
-  'wine-red':   ['вино красное', 'красное вино', 'вин крас'],
-  'wine-white': ['вино белое', 'белое вино', 'вин бел', 'розовое', 'вино роз'],
-  'strong':     ['водка', 'коньяк', 'виски', 'whisky', 'whiskey', 'brandy', 'ром', 'текила', 'джин', 'ликёр', 'ликер', 'крепкие'],
-  'beer':       ['пиво', 'beer', 'пивные', 'сидр'],
-  'soft':       ['вода', 'сок', 'лимонад', 'тоник', 'безалкогол', 'напиток', 'морс']
-};
-
-window._feedOffers = null;   // parsed offers by category id
-window._feedCatMap = null;   // categoryId → normalized names
-
-async function loadFeed() {
-  var url = document.getElementById('feedUrl').value.trim();
-  if (!url) return;
-  var btn = document.getElementById('feedBtn');
-  var status = document.getElementById('feedStatus');
-  btn.disabled = true;
-  setStatus('', 'Загружаем фид…');
-
-  var xmlText = null;
-
-  // 1. Try direct fetch
-  try {
-    var resp = await fetch(url, { mode: 'cors', cache: 'no-cache' });
-    if (resp.ok) {
-      xmlText = await resp.text();
-      setStatus('ok', '✓ Фид загружен напрямую');
-    }
-  } catch(e) { /* CORS blocked — fall through to proxy */ }
-
-  // 2. Fallback: try multiple proxies
-  var proxies = [
-    { name: 'corsproxy.io',  wrap: function(u){ return 'https://corsproxy.io/?' + encodeURIComponent(u); },                          parse: function(r){ return r.text(); } },
-    { name: 'allorigins',    wrap: function(u){ return 'https://api.allorigins.win/get?url=' + encodeURIComponent(u); },              parse: function(r){ return r.json().then(function(j){ return (j && j.contents) ? j.contents : Promise.reject('empty'); }); } },
-    { name: 'htmldriven',    wrap: function(u){ return 'https://cors-anywhere.herokuapp.com/' + u; },                                  parse: function(r){ return r.text(); } }
-  ];
-
-  for (var _i = 0; _i < proxies.length && !xmlText; _i++) {
-    var px = proxies[_i];
-    try {
-      setStatus('', 'Пробуем прокси ' + px.name + '…');
-      var resp2 = await fetch(px.wrap(url), { cache: 'no-cache' });
-      if (resp2.ok) {
-        var result = await px.parse(resp2);
-        if (result && typeof result === 'string' && result.length > 100) {
-          xmlText = result;
-          setStatus('ok', '✓ Фид загружен через ' + px.name);
-        }
-      }
-    } catch(e2) { /* try next proxy */ }
-  }
-
-  if (!xmlText) {
-    setStatus('err', '✗ Все прокси недоступны. Попробуй загрузить YML-файл вручную (кнопка ниже).');
-    btn.disabled = false;
-    return;
-  }
-
-  parseFeed(xmlText);
-  btn.disabled = false;
-}
-
-function loadFeedFile(input) {
-  var file = input.files && input.files[0];
-  if (!file) return;
-  setStatus('', 'Читаем файл…');
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    parseFeed(e.target.result);
-  };
-  reader.onerror = function() {
-    setStatus('err', '✗ Ошибка чтения файла');
-  };
-  reader.readAsText(file, 'utf-8');
-}
-
-function setStatus(cls, msg) {
-  var el = document.getElementById('feedStatus');
-  el.className = 'feed-status' + (cls ? ' ' + cls : '');
-  el.textContent = msg;
-}
-
-function parseFeed(xmlText) {
-  var parser = new DOMParser();
-  var doc = parser.parseFromString(xmlText, 'text/xml');
-  var parseErr = doc.querySelector('parsererror');
-  if (parseErr) { setStatus('err', '✗ Ошибка разбора XML'); return; }
-
-  // Build categoryId → name map
-  var catMap = {};
-  doc.querySelectorAll('category').forEach(function(c) {
-    catMap[c.getAttribute('id')] = c.textContent.toLowerCase().trim();
-  });
-  window._feedCatMap = catMap;
-
-  // For each FEED_MAP group, collect matching categoryIds
-  var groupCatIds = {};
-  Object.keys(FEED_MAP).forEach(function(group) {
-    var keywords = FEED_MAP[group];
-    groupCatIds[group] = Object.keys(catMap).filter(function(cid) {
-      var name = catMap[cid];
-      return keywords.some(function(kw) { return name.indexOf(kw) !== -1; });
-    });
-  });
-
-  // Parse offers
-  var offers = doc.querySelectorAll('offer');
-  var grouped = {};
-  Object.keys(FEED_MAP).forEach(function(g) { grouped[g] = []; });
-
-  offers.forEach(function(o) {
-    var cid = o.getAttribute('categoryId') || (o.querySelector('categoryId') ? o.querySelector('categoryId').textContent : '');
-    var group = null;
-    Object.keys(groupCatIds).forEach(function(g) {
-      if (groupCatIds[g].indexOf(cid) !== -1) group = g;
-    });
-    if (!group) return;
-
-    var name = getText(o, 'name') || getText(o, 'model') || '';
-    var price = getText(o, 'price') || '';
-    var pic = getText(o, 'picture') || '';
-    var url = o.getAttribute('url') || getText(o, 'url') || '';
-    var params = {};
-    o.querySelectorAll('param').forEach(function(p) {
-      params[(p.getAttribute('name') || '').toLowerCase()] = p.textContent.trim();
-    });
-    var vol = params['объём'] || params['объем'] || params['volume'] || params['ёмкость'] || params['емкость'] || '';
-
-    grouped[group].push({ name: name, price: price, pic: pic, url: url, vol: vol });
-  });
-
-  window._feedOffers = grouped;
-
-  var total = Object.values(grouped).reduce(function(s, arr) { return s + arr.length; }, 0);
-  setStatus('ok', '✓ Загружено ' + total + ' товаров по ' + Object.keys(groupCatIds).filter(function(g){ return groupCatIds[g].length; }).length + ' категориям');
-
-  renderAllProducts();
-}
-
-function getText(node, tag) {
-  var el = node.querySelector(tag);
-  return el ? el.textContent.trim() : '';
-}
-
-function renderAllProducts() {
-  if (!window._feedOffers) return;
-  Object.keys(FEED_MAP).forEach(function(group) {
-    var container = document.getElementById('prod-' + group);
-    if (!container) return;
-    var items = window._feedOffers[group] || [];
-    if (!items.length) {
-      container.innerHTML = '';
-      return;
-    }
-    // Show up to 6 cards
-    var show = items.slice(0, 6);
-    container.innerHTML = show.map(function(item) {
-      var imgHtml = item.pic
-        ? '<img src="' + escHtml(item.pic) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
-        : '';
-      var volHtml = item.vol ? '<div class="pc-vol">' + escHtml(item.vol) + '</div>' : '';
-      var priceHtml = item.price ? '<div class="pc-price">' + formatPrice(item.price) + ' ₽</div>' : '';
-      var linkHtml = item.url
-        ? '<a class="pc-link" href="' + escHtml(item.url) + '" target="_blank" rel="noopener">Перейти →</a>'
-        : '';
-      return '<div class="product-card">' +
-        imgHtml +
-        '<div class="pc-name">' + escHtml(item.name) + '</div>' +
-        volHtml + priceHtml + linkHtml +
-        '</div>';
-    }).join('') + (items.length > 6 ? '<div class="products-empty">+ ещё ' + (items.length - 6) + ' товаров в категории</div>' : '');
-  });
-}
-
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function formatPrice(p) {
-  return String(Math.round(Number(p))).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
-}
 </script>
 </body>
 </html>
